@@ -3,6 +3,7 @@ package com.example.cellphonesignal.ui.dashboard;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,9 @@ public class DashboardFragment extends Fragment {
 
     private DashboardViewModel dashboardViewModel;
 
+    private final Handler mHandler = new Handler();
+    private Runnable runnable1;
+    private Runnable runnable2;
     private LineGraphSeries<DataPoint> series; //hold our data that is plotted
 
     //for demonstration, will remove later
@@ -46,13 +50,14 @@ public class DashboardFragment extends Fragment {
         series = new LineGraphSeries<DataPoint>();
         //set boundaries (tinker with values)
         graphView.setXAxisBoundsManual(true);
-        //graphView.setMinX(0.0);
-        //graphView.setMaxX(10);
+        graphView.setMinX(0.0);
+        graphView.setMaxX(120.0);
         graphView.setYAxisBoundsManual(true);
         graphView.setMinY(0.0);
         graphView.setMaxY(10.1);
         graphView.setScrollable(true);
         graph.setTitle("Wifi Signal Strength");
+        graph.setTitleTextSize(64);
         //TODO: adjust labels on horizontal axis to go by .5 increments
 
         graph.addSeries(series);
@@ -61,30 +66,24 @@ public class DashboardFragment extends Fragment {
 
     @Override
     public void onResume() {
+        //lets us start the tracking again without crashing the app
         super.onResume();
 
-        //here we are going to simulate real time with thread that append data to the graph
-        new Thread(new Runnable() {
+        runnable1 = new Runnable() {
             @Override
             public void run() {
-                //we add 100 new entries
-                for(int i = 0; i < 1000; i++) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            addEntry();
-                        }
-                    });
-
-                    //sleep to slow down thread execution (error if not in try/catch)
-                    try {
-                        Thread.sleep(500); //update by half second
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                addEntry();
+                mHandler.postDelayed(this, 500);
             }
-        }).start();
+        };
+        mHandler.postDelayed(runnable1, 500);
+    }
+
+    @Override
+    public void onPause() {
+        //allows us to switch among the screens without crashing the app
+        mHandler.removeCallbacks(runnable1);
+        super.onPause();
     }
 
     private void addEntry() {
@@ -92,7 +91,7 @@ public class DashboardFragment extends Fragment {
         //in real usage, will add proper values from WifiManager
 
         //this line says: we choose to display max of 10 points on viewport and we scroll to end
-        series.appendData(new DataPoint(lastX, RANDOM.nextDouble() * 10d), true, 12);
+        series.appendData(new DataPoint(lastX, RANDOM.nextDouble() * 10d), true, 20);
         lastX += .5;
     }
 }
