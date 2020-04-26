@@ -51,25 +51,21 @@ public class HomeFragment extends Fragment {
         });
 
         final TextView textWifiEnabled = root.findViewById(R.id.wifi_enabled);
-        homeViewModel.getWifiEnabled().observe(getViewLifecycleOwner(), new Observer<String>() {
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        boolean isWifiOn = wifiManager.isWifiEnabled();
+        homeViewModel.getWifiEnabled(isWifiOn).observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                if (wifiManager.isWifiEnabled()) {
-                    textWifiEnabled.setText("Yes");
-                } else {
-                    textWifiEnabled.setText("No");
-                }
+                textWifiEnabled.setText(s);
             }
         });
 
         final TextView textMACAddress = root.findViewById(R.id.mac_address);
-        homeViewModel.getMacAddress().observe(getViewLifecycleOwner(), new Observer<String>() {
+        String macaddr = wifiManager.getConnectionInfo().getMacAddress();
+        homeViewModel.getMacAddress(macaddr).observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                String macaddr = wifiManager.getConnectionInfo().getMacAddress();
-                textMACAddress.setText(macaddr); //must test on real device
+                textMACAddress.setText(s); //must test on real device
             }
         });
 

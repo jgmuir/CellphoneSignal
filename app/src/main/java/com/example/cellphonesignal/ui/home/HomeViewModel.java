@@ -1,6 +1,8 @@
 package com.example.cellphonesignal.ui.home;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 
 import androidx.lifecycle.LiveData;
@@ -37,7 +39,18 @@ public class HomeViewModel extends ViewModel {
     public LiveData<String> getExText() { return mText; }
 
     public LiveData<String> getPhoneType() { return phoneType; }
-    public LiveData<String> getWifiEnabled() { return wifiEnabled; }
-    public LiveData<String> getMacAddress() { return macAddress; }
+    public LiveData<String> getWifiEnabled(boolean isWifiOn) {
+        if(isWifiOn) {
+            wifiEnabled.setValue("Yes");
+            return wifiEnabled;
+        } else {
+            wifiEnabled.setValue("No");
+            return wifiEnabled;
+        }
+    }
+    public LiveData<String> getMacAddress(String macaddr) {
+        macAddress.setValue(macaddr);
+        return macAddress;
+    }
     public LiveData<String> getCellService() { return cellService; }
 }

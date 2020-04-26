@@ -57,7 +57,7 @@ public class DashboardFragment extends Fragment {
         graphView.setMaxY(10.1);
         graphView.setScrollable(true);
         graph.setTitle("Wifi Signal Strength");
-        graph.setTitleTextSize(64);
+        graph.setTitleTextSize(48);
         //TODO: adjust labels on horizontal axis to go by .5 increments
 
         graph.addSeries(series);
