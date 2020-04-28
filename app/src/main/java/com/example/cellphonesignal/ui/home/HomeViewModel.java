@@ -1,15 +1,12 @@
 package com.example.cellphonesignal.ui.home;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import static androidx.core.content.ContextCompat.getSystemService;
 
 public class HomeViewModel extends ViewModel {
 
@@ -18,7 +15,7 @@ public class HomeViewModel extends ViewModel {
     //maybe a different data type?
     private MutableLiveData<String> phoneType;
     private MutableLiveData<String> wifiEnabled;
-    private MutableLiveData<String> macAddress;
+    private MutableLiveData<String> ipAddress;
     private MutableLiveData<String> cellService;
     private Activity context;
 
@@ -31,9 +28,8 @@ public class HomeViewModel extends ViewModel {
         phoneType = new MutableLiveData<>();
         phoneType.setValue(Build.MODEL);
         wifiEnabled = new MutableLiveData<>();
-        macAddress = new MutableLiveData<>();
+        ipAddress = new MutableLiveData<>();
         cellService = new MutableLiveData<>();
-        cellService.setValue("Yes");
     }
 
     public LiveData<String> getExText() { return mText; }
@@ -48,9 +44,12 @@ public class HomeViewModel extends ViewModel {
             return wifiEnabled;
         }
     }
-    public LiveData<String> getMacAddress(String macaddr) {
-        macAddress.setValue(macaddr);
-        return macAddress;
+    public LiveData<String> getIPAddress(String macaddr) {
+        ipAddress.setValue(macaddr);
+        return ipAddress;
     }
-    public LiveData<String> getCellService() { return cellService; }
+    public LiveData<String> getCellService(String serviceProvider) {
+        cellService.setValue(serviceProvider);
+        return cellService;
+    }
 }
