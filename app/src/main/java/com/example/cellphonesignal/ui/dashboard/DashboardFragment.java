@@ -1,14 +1,18 @@
 package com.example.cellphonesignal.ui.dashboard;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -45,15 +49,15 @@ public class DashboardFragment extends Fragment {
 
         //set axis titles
         gridLabelRenderer.setHorizontalAxisTitle("Time (seconds)");
-        gridLabelRenderer.setVerticalAxisTitle("Signal Strength");
+        gridLabelRenderer.setVerticalAxisTitle("Signal Strength (dBm)");
 
         //set boundaries of graph
         graphView.setXAxisBoundsManual(true);
         graphView.setMinX(0.0);
         graphView.setMaxX(120.0);
         graphView.setYAxisBoundsManual(true);
-        graphView.setMinY(0.0);
-        graphView.setMaxY(1.1); //need to play with this value depending on data received
+        graphView.setMinY(-130);
+        graphView.setMaxY(0.1);
         graphView.setScrollable(true); //scroll along with values added over time
 
         graph.addSeries(series); //add data to graph
@@ -65,6 +69,7 @@ public class DashboardFragment extends Fragment {
         //lets us start the tracking again without crashing the app
         super.onResume();
         runnable1 = new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void run() {
                 addEntry();
@@ -81,17 +86,13 @@ public class DashboardFragment extends Fragment {
         super.onPause();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void addEntry() {
         //get wifiManager to get its values
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if(wifiManager.isWifiEnabled()) { //if true, display a real-time graph with useful data
-            //int result = wifiManager.getConnectionInfo().getLinkSpeed();
-            //series.appendData(new DataPoint(lastX, result), true, 40);
-            //below is test
-            series.appendData(new DataPoint(lastX, Math.sin(lastX)), true, 240);
-        } else { //if not enabled, display real-time graph of 0
-            series.appendData(new DataPoint(lastX, 0), true, 240);
-        }
+        int result = wifiManager.getConnectionInfo().getRssi();
+        series.appendData(new DataPoint(lastX, result), true, 240);
+        Log.d("RSSI", Integer.toString(result)); //for debugging and checking values
         lastX += .5; //update by .5 increments
     }
 }

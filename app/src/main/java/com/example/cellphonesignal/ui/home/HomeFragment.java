@@ -76,9 +76,9 @@ public class HomeFragment extends Fragment {
         //consider removing this or putting something more worthwhile here
         final TextView textCellService = root.findViewById(R.id.cell_service);
         TelephonyManager tm = (TelephonyManager) getActivity().getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        String networkOperator = tm.getNetworkOperatorName();
-        Log.d("HomeFrag2", networkOperator);
-        homeViewModel.getCellService(networkOperator).observe(getViewLifecycleOwner(), new Observer<String>() {
+        int cellType = tm.getPhoneType();
+        Log.d("HomeFrag2", Integer.toString(cellType));
+        homeViewModel.getCellService(cellType).observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textCellService.setText(s);

@@ -48,8 +48,16 @@ public class HomeViewModel extends ViewModel {
         ipAddress.setValue(macaddr);
         return ipAddress;
     }
-    public LiveData<String> getCellService(String serviceProvider) {
-        cellService.setValue(serviceProvider);
+    public LiveData<String> getCellService(int cellType) {
+        if(cellType == 1) {
+            cellService.setValue("GSM");
+        } else  if(cellType == 2) {
+            cellService.setValue("CDMA");
+        } else if(cellType == 3) {
+            cellService.setValue("SIP");
+        } else {
+            cellService.setValue("Unknown");
+        }
         return cellService;
     }
 }
