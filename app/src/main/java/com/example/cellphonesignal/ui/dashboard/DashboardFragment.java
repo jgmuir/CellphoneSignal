@@ -10,10 +10,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.cellphonesignal.R;
@@ -26,6 +29,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 public class DashboardFragment extends Fragment {
 
     private DashboardViewModel dashboardViewModel;
+    View mRoot;
 
     private final Handler mHandler = new Handler(); //handler that ends graph creation when leaving
     private Runnable runnable1; //runnable that runs graph creation
@@ -37,6 +41,8 @@ public class DashboardFragment extends Fragment {
         dashboardViewModel =
                 ViewModelProviders.of(this).get(DashboardViewModel.class);
         View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        mRoot = root;
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         GraphView graph = (GraphView) root.findViewById(R.id.wifiStrengthGraph); //create graph
         Viewport graphView = graph.getViewport(); //get its viewport
@@ -93,6 +99,14 @@ public class DashboardFragment extends Fragment {
         int result = wifiManager.getConnectionInfo().getRssi();
         series.appendData(new DataPoint(lastX, result), true, 240);
         Log.d("RSSI", Integer.toString(result)); //for debugging and checking values
+
+        final TextView textWifiState = mRoot.findViewById(R.id.wifi_state);
+        String wifiStateString = dashboardViewModel.displayWifiState(result);
+        textWifiState.setText(wifiStateString); //show the relative strength of the wifi
+
+        String ssid = wifiManager.getConnectionInfo().getSSID();
+        final TextView textSSID = mRoot.findViewById(R.id.ssid);
+        textSSID.setText(ssid); //show the wifi network name
         lastX += .5; //update by .5 increments
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,22 +20,25 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.example.cellphonesignal.R;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Formatter;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
+    private View mRoot;
+
+    private Runnable runnable1;
+    private final Handler mHandler = new Handler();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         homeViewModel =
                 ViewModelProviders.of(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
+        mRoot = root;
 
         final TextView textPhoneType = root.findViewById(R.id.phone_type);
         homeViewModel.getPhoneType().observe(getViewLifecycleOwner(), new Observer<String>() {
@@ -47,12 +51,11 @@ public class HomeFragment extends Fragment {
         final TextView textWifiEnabled = root.findViewById(R.id.wifi_enabled);
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         boolean isWifiOn = wifiManager.isWifiEnabled();
-        homeViewModel.getWifiEnabled(isWifiOn).observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textWifiEnabled.setText(s);
-            }
-        });
+        if(isWifiOn) {
+            textWifiEnabled.setText("Yes");
+        } else {
+            textWifiEnabled.setText("No");
+        }
 
         final TextView textIPAddress = root.findViewById(R.id.ip_address);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -65,13 +68,7 @@ public class HomeFragment extends Fragment {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        Log.d("HomeFrag1", ip);
-        homeViewModel.getIPAddress(ip).observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textIPAddress.setText(s); //must test on real device
-            }
-        });
+        textIPAddress.setText(ip);
 
         //consider removing this or putting something more worthwhile here
         final TextView textCellService = root.findViewById(R.id.cell_service);
@@ -87,5 +84,49 @@ public class HomeFragment extends Fragment {
         });
 
         return root;
+    }
+
+    @Override
+    public void onResume() {
+        //lets us start the tracking again without crashing the app
+        super.onResume();
+        runnable1 = new Runnable() {
+            @Override
+            public void run() {
+                updateEntry();
+                mHandler.postDelayed(this, 500);
+            }
+        };
+        mHandler.postDelayed(runnable1, 500);
+    }
+
+    @Override
+    public void onPause() {
+        //allows us to switch among the screens without crashing the app
+        mHandler.removeCallbacks(runnable1);
+        super.onPause();
+    }
+
+    private void updateEntry() {
+        final TextView textWifiEnabled = mRoot.findViewById(R.id.wifi_enabled);
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        boolean isWifiOn = wifiManager.isWifiEnabled();
+        if(isWifiOn) {
+            textWifiEnabled.setText("Yes");
+        } else {
+            textWifiEnabled.setText("No");
+        }
+        final TextView textIPAddress = mRoot.findViewById(R.id.ip_address);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ipInt = wifiInfo.getIpAddress();
+        String ip = "";
+        try {
+            ip = InetAddress.getByAddress(
+                    ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(ipInt).array())
+                    .getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        textIPAddress.setText(ip);
     }
 }

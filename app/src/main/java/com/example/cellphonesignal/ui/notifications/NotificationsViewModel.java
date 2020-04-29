@@ -16,4 +16,20 @@ public class NotificationsViewModel extends ViewModel {
     public LiveData<String> getText() {
         return mText;
     }
+
+    public String displayCellState(int result) {
+        String cellStateString = "";
+        if(result >= -90) {
+            cellStateString = "Excellent";
+        } else if(result >= -105) {
+            cellStateString = "Very Good";
+        } else if(result >= -110) {
+            cellStateString = "Okay";
+        } else if(result >= -119) {
+            cellStateString = "Not Good";
+        } else {
+            cellStateString = "Practically Unusable";
+        }
+        return cellStateString;
+    }
 }
